@@ -144,7 +144,7 @@ document.onkeydown = function (event) {
 
 var initXPos = 6;
 var initYPos = 9;
-var initLength = 8;
+var initLength = 4;
 var speed = 100;
 var cells;
 var snakeCells;
@@ -159,8 +159,8 @@ var cellType = {
 var direction = {
   up: 0,
   right: 1,
-  down: 3,
-  left: 4
+  down: 2,
+  left: 3
 };
 
 function start() {
@@ -259,7 +259,6 @@ function generateApple() {
 }
 
 function move() {
-  //debugger;
   var wasGrowth = false;
 
   if (needGrowth) {
@@ -275,7 +274,6 @@ function move() {
     var y = snakeCells[i].y;
 
     if (cells[x][y].growed === true) {
-      debugger;
       cells[x][y].growed = false;
       cells[x][y].dir = cells[snakeCells[i - 1].x][snakeCells[i - 1].y].dir;
     }
@@ -288,18 +286,17 @@ function move() {
     y += c.dir === direction.down ? 1 : c.dir === direction.up ? -1 : 0;
 
     if (!(0 <= x && x < cells.length && 0 <= y && y < cells.length)) {
-      //debugger;
+      //
       die();
       return;
     }
 
     if (isHead) {
       if (cells[x][y].type === cellType.snake) {
-        //debugger;
+        //
         die();
         return;
       } else if (cells[x][y].type === cellType.apple) {
-        debugger;
         grow();
 
         if (!needGrowth) {
@@ -310,7 +307,7 @@ function move() {
 
       cells[x][y].dir = c.dir;
     } else if (isEnd) {
-      //debugger;
+      //
       cells[c.x / emptyCellImage.width][c.y / emptyCellImage.width].dir = undefined;
     }
 
@@ -335,7 +332,7 @@ function grow() {
   y += c.dir === direction.down ? -1 : c.dir === direction.up ? 1 : 0;
 
   if (!(0 <= x && x < cells.length && 0 <= y && y < cells.length) || cells[x][y].type === cellType.snake) {
-    //debugger;
+    //
     needGrowth = true;
     return;
   }
@@ -354,6 +351,7 @@ function die() {
 }
 
 function turnLeft() {
+  debugger;
   var snakeHead = cells[snakeCells[0].x][snakeCells[0].y];
   if (snakeHead.dir === direction.left || snakeHead.dir === direction.right) return;
   snakeHead.dir = direction.left;
@@ -366,6 +364,7 @@ function turnRight() {
 }
 
 function turnUp() {
+  debugger;
   var snakeHead = cells[snakeCells[0].x][snakeCells[0].y];
   if (snakeHead.dir === direction.up || snakeHead.dir === direction.down) return;
   snakeHead.dir = direction.up;

@@ -28,7 +28,7 @@ document.onkeydown = (event) => {
 
 let initXPos = 6;
 let initYPos = 9;
-let initLength = 8;
+let initLength = 4;
 let speed = 100;
 
 let cells;
@@ -45,8 +45,8 @@ let cellType = {
 let direction = {
     up: 0,
     right: 1,
-    down: 3,
-    left: 4
+    down: 2,
+    left: 3
 };
 
 function start() {
@@ -94,7 +94,6 @@ function generateApple() {
 }
 
 function move() {
-    //debugger;
     let wasGrowth = false;
     if(needGrowth) {
         needGrowth = false;
@@ -106,7 +105,7 @@ function move() {
         let x = snakeCells[i].x;
         let y = snakeCells[i].y;
         if(cells[x][y].growed === true) {
-            debugger;
+            
             cells[x][y].growed = false;
             cells[x][y].dir = cells[snakeCells[i-1].x][snakeCells[i-1].y].dir;
         }
@@ -117,17 +116,17 @@ function move() {
         x += c.dir === direction.right ? 1 : (c.dir === direction.left ? -1 : 0);
         y += c.dir === direction.down ? 1 : (c.dir === direction.up ? -1 : 0);
         if(!(0 <= x && x < cells.length && 0 <= y && y < cells.length)) {
-            //debugger;
+            //
             die();
             return;
         }
         if(isHead) {
             if(cells[x][y].type === cellType.snake) {
-                //debugger;
+                //
                 die();
                 return;
             } else if(cells[x][y].type === cellType.apple) {
-                debugger;
+                
                 grow();
                 if(!needGrowth) {
                     length++;
@@ -137,7 +136,7 @@ function move() {
             cells[x][y].dir = c.dir;
         }
         else if(isEnd) {
-            //debugger;
+            //
             cells[c.x/emptyCellImage.width][c.y/emptyCellImage.width].dir = undefined;
         }
         cells[x][y].type = cellType.snake;
@@ -160,7 +159,7 @@ function grow() {
     x += c.dir === direction.right ? -1 : (c.dir === direction.left ? 1 : 0);
     y += c.dir === direction.down ? -1 : (c.dir === direction.up ? 1 : 0);
     if(!(0 <= x && x < cells.length && 0 <= y && y < cells.length) || cells[x][y].type === cellType.snake) {
-        //debugger;
+        //
         needGrowth = true;
         return;
     }
