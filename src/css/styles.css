@@ -1,0 +1,24 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+#canvas {
+    border: 2px #111 solid;
+    /*width: 600px;*/
+    /*height: 600px;*/
+    left: calc(50% - 250px);
+    top: 20px;
+    position: absolute;
+}
+
+#die-message {
+    display: none;
+    margin-top: 2%;
+}
+
+p {
+    margin: 5% 0 0 15%;
+    font-family: "Comic Sans MS", sans-serif;
+    font-size: 30px;
+}
