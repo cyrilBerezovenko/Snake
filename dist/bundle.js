@@ -138,7 +138,17 @@ appleCellImage.onload = function () {
   update();
 };
 
+var turning = false;
+
 document.onkeydown = function (event) {
+  if (turning) {
+    setTimeout(function () {
+      return document.onkeydown(event);
+    }, 20);
+    return;
+  }
+
+  turning = true;
   if (event.key === 'ArrowLeft') turnLeft();else if (event.key === 'ArrowRight') turnRight();else if (event.key === 'ArrowUp') turnUp();else if (event.key === 'ArrowDown') turnDown();
 };
 
@@ -207,6 +217,8 @@ function update() {
         for (var _iterator2 = row[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
           var cell = _step2.value;
           ctx.drawImage(getImage(cell.type), cell.x, cell.y);
+          if (cell.type !== cellType.snake && cell.dir !== undefined) ;
+          /*debugger;*/
         }
       } catch (err) {
         _didIteratorError2 = true;
@@ -259,9 +271,12 @@ function generateApple() {
 }
 
 function move() {
+  //document.onkeydown({key: 'ArrowRight'}); document.onkeydown({key: 'ArrowDown'});
+  turning = false;
   var wasGrowth = false;
 
   if (needGrowth) {
+    debugger;
     needGrowth = false;
     wasGrowth = true;
     grow();
@@ -276,6 +291,7 @@ function move() {
     if (cells[x][y].growed === true) {
       cells[x][y].growed = false;
       cells[x][y].dir = cells[snakeCells[i - 1].x][snakeCells[i - 1].y].dir;
+      if (cells[x][y].dir === undefined) debugger;
     }
 
     var c = cells[x][y];
@@ -286,39 +302,40 @@ function move() {
     y += c.dir === direction.down ? 1 : c.dir === direction.up ? -1 : 0;
 
     if (!(0 <= x && x < cells.length && 0 <= y && y < cells.length)) {
-      //
       die();
       return;
     }
 
     if (isHead) {
       if (cells[x][y].type === cellType.snake) {
-        //
         die();
         return;
       } else if (cells[x][y].type === cellType.apple) {
+        // debugger;
         grow();
 
         if (!needGrowth) {
           length++;
-          generateApple();
         }
+
+        generateApple();
       }
 
       cells[x][y].dir = c.dir;
-    } else if (isEnd) {
-      //
-      cells[c.x / emptyCellImage.width][c.y / emptyCellImage.width].dir = undefined;
-    }
+    } else if (isEnd && !needGrowth
+    /* !!!!!! */
+    ) {// cells[c.x/emptyCellImage.width][c.y/emptyCellImage.width].dir = undefined;
+      }
 
     cells[x][y].type = cellType.snake;
     newSnakeCells[i] = {
       x: x,
       y: y
     };
-  }
+  } // if(wasGrowth)
+  //     newSnakeCells.push(snakeCells[snakeCells.length-1]);
 
-  if (wasGrowth) newSnakeCells.push(snakeCells[snakeCells.length - 1]);
+
   snakeCells = newSnakeCells;
   setTimeout(move, speed);
 }
@@ -351,7 +368,6 @@ function die() {
 }
 
 function turnLeft() {
-  debugger;
   var snakeHead = cells[snakeCells[0].x][snakeCells[0].y];
   if (snakeHead.dir === direction.left || snakeHead.dir === direction.right) return;
   snakeHead.dir = direction.left;
@@ -364,7 +380,6 @@ function turnRight() {
 }
 
 function turnUp() {
-  debugger;
   var snakeHead = cells[snakeCells[0].x][snakeCells[0].y];
   if (snakeHead.dir === direction.up || snakeHead.dir === direction.down) return;
   snakeHead.dir = direction.up;

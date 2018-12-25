@@ -19,7 +19,14 @@ appleCellImage.onload = () => {
     update();
 };
 
+let turning = false;
+
 document.onkeydown = (event) => {
+    if(turning) {
+        setTimeout(() => document.onkeydown(event), 20);
+        return;
+    }
+    turning = true;
     if(event.key === 'ArrowLeft') turnLeft();
     else if(event.key === 'ArrowRight') turnRight();
     else if(event.key === 'ArrowUp') turnUp();
@@ -76,12 +83,12 @@ function update() {
     for(let row of cells) {
         for(let cell of row) {
             ctx.drawImage(getImage(cell.type), cell.x, cell.y);
+            if(cell.type !== cellType.snake && cell.dir !== undefined);/*debugger;*/
         }
     }
     lengthEl.innerText = length;
     requestAnimationFrame(update);
 }
-
 function generateApple() {
     let rand = () => Math.floor(Math.random() * cells.length);
     let x = rand();
@@ -94,8 +101,11 @@ function generateApple() {
 }
 
 function move() {
+    //document.onkeydown({key: 'ArrowRight'}); document.onkeydown({key: 'ArrowDown'});
+    turning = false;
     let wasGrowth = false;
     if(needGrowth) {
+        debugger;
         needGrowth = false;
         wasGrowth = true;
         grow();
@@ -105,9 +115,9 @@ function move() {
         let x = snakeCells[i].x;
         let y = snakeCells[i].y;
         if(cells[x][y].growed === true) {
-            
             cells[x][y].growed = false;
             cells[x][y].dir = cells[snakeCells[i-1].x][snakeCells[i-1].y].dir;
+            if(cells[x][y].dir === undefined) debugger;
         }
         let c = cells[x][y];
         let isHead = i === 0;
@@ -116,28 +126,25 @@ function move() {
         x += c.dir === direction.right ? 1 : (c.dir === direction.left ? -1 : 0);
         y += c.dir === direction.down ? 1 : (c.dir === direction.up ? -1 : 0);
         if(!(0 <= x && x < cells.length && 0 <= y && y < cells.length)) {
-            //
             die();
             return;
         }
         if(isHead) {
             if(cells[x][y].type === cellType.snake) {
-                //
                 die();
                 return;
             } else if(cells[x][y].type === cellType.apple) {
-                
+                // debugger;
                 grow();
                 if(!needGrowth) {
                     length++;
-                    generateApple();
                 }
+                generateApple();
             }
             cells[x][y].dir = c.dir;
         }
-        else if(isEnd) {
-            //
-            cells[c.x/emptyCellImage.width][c.y/emptyCellImage.width].dir = undefined;
+        else if(isEnd && !needGrowth /* !!!!!! */) {
+            // cells[c.x/emptyCellImage.width][c.y/emptyCellImage.width].dir = undefined;
         }
         cells[x][y].type = cellType.snake;
         newSnakeCells[i] = {
@@ -145,8 +152,8 @@ function move() {
             y: y
         };
     }
-    if(wasGrowth)
-        newSnakeCells.push(snakeCells[snakeCells.length-1]);
+    // if(wasGrowth)
+    //     newSnakeCells.push(snakeCells[snakeCells.length-1]);
     snakeCells = newSnakeCells;
     setTimeout(move, speed);
 }
