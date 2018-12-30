@@ -3,9 +3,6 @@ import Cell from './cell'
 let cvs = document.querySelector('#canvas');
 let ctx = cvs.getContext('2d');
 
-cvs.width = 540;
-cvs.height = 540;
-
 let emptyCellImage = new Image();
 let snakeCellImage = new Image();
 let appleCellImage = new Image();
@@ -40,6 +37,10 @@ let initXPos = 6;
 let initYPos = 9;
 let initLength = 4;
 let speed = 69;
+let cellCount = 28;
+
+cvs.width = emptyCellImage.width * cellCount;
+cvs.height = emptyCellImage.height * cellCount;
 
 let cells;
 let snakeCells;
@@ -52,6 +53,7 @@ let cellType = {
     snake: 1,
     apple: 2
 };
+
 let direction = {
     up: 0,
     right: 1,
@@ -60,21 +62,17 @@ let direction = {
 };
 
 function start() {
-    let cellCount = cvs.width / emptyCellImage.width;
     cells = [];
     snakeCells = [];
     for(let i = 0; i < cellCount; i++) {
         let column = [];
         for(let j = 0; j < cellCount; j++) {
-            column[j] = new Cell(i*emptyCellImage.width, j*emptyCellImage.height, cellType.empty, undefined);
+            column[j] = new Cell(i, j, cellType.empty, undefined);
         }
         cells[i] = column;
     }
     for(let j = 0; j < initLength; j++) {
-        snakeCells[j] = {
-            x: initXPos,
-            y: j + initYPos
-        };
+        snakeCells[j] = cells[initXPos][j + initYPos];
         cells[initXPos][j + initYPos].type = cellType.snake;
         cells[initXPos][j + initYPos].dir = direction.up;
     }
@@ -85,13 +83,13 @@ function start() {
 function update() {
     for(let row of cells) {
         for(let cell of row) {
-            ctx.drawImage(getImage(cell.type), cell.x, cell.y);
-            if(cell.type !== cellType.snake && cell.dir !== undefined);/*debugger;*/
+            ctx.drawImage(getImage(cell.type), cell.x * emptyCellImage.width, cell.y * emptyCellImage.height);
         }
     }
     lengthEl.innerText = length;
     requestAnimationFrame(update);
 }
+
 function generateApple() {
     let rand = () => Math.floor(Math.random() * cells.length);
     let x = rand();
@@ -104,59 +102,40 @@ function generateApple() {
 }
 
 function move() {
-    //document.onkeydown({key: 'ArrowRight'}); document.onkeydown({key: 'ArrowDown'});
     turning = false;
-    let wasGrowth = false;
     if(needGrowth) {
         debugger;
         needGrowth = false;
-        wasGrowth = true;
         grow();
     }
     let newSnakeCells = [];
     for(let i = 0; i < snakeCells.length; i++) {
+        if(snakeCells[i].growed === true) {
+            snakeCells[i].growed = false;
+            snakeCells[i].dir = snakeCells[i-1].dir;
+        }
+        let isHead = i === 0;
+        snakeCells[i].type = cellType.empty;
         let x = snakeCells[i].x;
         let y = snakeCells[i].y;
-        if(cells[x][y].growed === true) {
-            cells[x][y].growed = false;
-            cells[x][y].dir = cells[snakeCells[i-1].x][snakeCells[i-1].y].dir;
-            if(cells[x][y].dir === undefined) debugger;
-        }
-        let c = cells[x][y];
-        let isHead = i === 0;
-        let isEnd = i === snakeCells.length - 1;
-        cells[x][y].type = cellType.empty;
-        x += c.dir === direction.right ? 1 : (c.dir === direction.left ? -1 : 0);
-        y += c.dir === direction.down ? 1 : (c.dir === direction.up ? -1 : 0);
-        if(!(0 <= x && x < cells.length && 0 <= y && y < cells.length)) {
-            die();
-            return;
-        }
+        x += snakeCells[i].dir === direction.right ? 1 : (snakeCells[i].dir === direction.left ? -1 : 0);
+        y += snakeCells[i].dir === direction.down ? 1 : (snakeCells[i].dir === direction.up ? -1 : 0);
         if(isHead) {
-            if(cells[x][y].type === cellType.snake) {
+            if(cells[x] === undefined || cells[x][y] === undefined || cells[x][y].type === cellType.snake) {
                 die();
                 return;
             } else if(cells[x][y].type === cellType.apple) {
-                // debugger;
                 grow();
                 if(!needGrowth) {
                     length++;
                 }
                 generateApple();
             }
-            cells[x][y].dir = c.dir;
-        }
-        else if(isEnd && !needGrowth /* !!!!!! */) {
-            // cells[c.x/emptyCellImage.width][c.y/emptyCellImage.width].dir = undefined;
+            cells[x][y].dir = snakeCells[i].dir;
         }
         cells[x][y].type = cellType.snake;
-        newSnakeCells[i] = {
-            x: x,
-            y: y
-        };
+        newSnakeCells[i] = cells[x][y];
     }
-    // if(wasGrowth)
-    //     newSnakeCells.push(snakeCells[snakeCells.length-1]);
     snakeCells = newSnakeCells;
     setTimeout(move, speed);
 }
@@ -165,20 +144,15 @@ function grow() {
     let lastCell = snakeCells[snakeCells.length-1];
     let x = lastCell.x;
     let y = lastCell.y;
-    let c = cells[x][y];
-    x += c.dir === direction.right ? -1 : (c.dir === direction.left ? 1 : 0);
-    y += c.dir === direction.down ? -1 : (c.dir === direction.up ? 1 : 0);
+    x += lastCell.dir === direction.right ? -1 : (lastCell.dir === direction.left ? 1 : 0);
+    y += lastCell.dir === direction.down ? -1 : (lastCell.dir === direction.up ? 1 : 0);
     if(!(0 <= x && x < cells.length && 0 <= y && y < cells.length) || cells[x][y].type === cellType.snake) {
-        //
         needGrowth = true;
         return;
     }
     cells[x][y].type = cellType.snake;
     cells[x][y].growed = true;
-    snakeCells[snakeCells.length] = {
-        x: x,
-        y: y
-    };
+    snakeCells[snakeCells.length] = cells[x][y];
 }
 
 function die() {
@@ -187,28 +161,28 @@ function die() {
 }
 
 function turnLeft() {
-    let snakeHead = cells[snakeCells[0].x][snakeCells[0].y];
+    let snakeHead = snakeCells[0];
     if(snakeHead.dir === direction.left || snakeHead.dir === direction.right)
         return;
     snakeHead.dir = direction.left;
 }
 
 function turnRight() {
-    let snakeHead = cells[snakeCells[0].x][snakeCells[0].y];
+    let snakeHead = snakeCells[0];
     if(snakeHead.dir === direction.left || snakeHead.dir === direction.right)
         return;
     snakeHead.dir = direction.right;
 }
 
 function turnUp() {
-    let snakeHead = cells[snakeCells[0].x][snakeCells[0].y];
+    let snakeHead = snakeCells[0];
     if(snakeHead.dir === direction.up || snakeHead.dir === direction.down)
         return;
     snakeHead.dir = direction.up;
 }
 
 function turnDown() {
-    let snakeHead = cells[snakeCells[0].x][snakeCells[0].y];
+    let snakeHead = snakeCells[0];
     if(snakeHead.dir === direction.up || snakeHead.dir === direction.down)
         return;
     snakeHead.dir = direction.down;

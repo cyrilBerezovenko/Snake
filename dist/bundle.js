@@ -124,8 +124,6 @@ __webpack_require__.r(__webpack_exports__);
 
 var cvs = document.querySelector('#canvas');
 var ctx = cvs.getContext('2d');
-cvs.width = 540;
-cvs.height = 540;
 var emptyCellImage = new Image();
 var snakeCellImage = new Image();
 var appleCellImage = new Image();
@@ -158,6 +156,9 @@ var initXPos = 6;
 var initYPos = 9;
 var initLength = 4;
 var speed = 69;
+var cellCount = 28;
+cvs.width = emptyCellImage.width * cellCount;
+cvs.height = emptyCellImage.height * cellCount;
 var cells;
 var snakeCells;
 var lengthEl = document.querySelector('#length');
@@ -176,7 +177,6 @@ var direction = {
 };
 
 function start() {
-  var cellCount = cvs.width / emptyCellImage.width;
   cells = [];
   snakeCells = [];
 
@@ -184,17 +184,14 @@ function start() {
     var column = [];
 
     for (var j = 0; j < cellCount; j++) {
-      column[j] = new _cell__WEBPACK_IMPORTED_MODULE_0__["default"](i * emptyCellImage.width, j * emptyCellImage.height, cellType.empty, undefined);
+      column[j] = new _cell__WEBPACK_IMPORTED_MODULE_0__["default"](i, j, cellType.empty, undefined);
     }
 
     cells[i] = column;
   }
 
   for (var _j = 0; _j < initLength; _j++) {
-    snakeCells[_j] = {
-      x: initXPos,
-      y: _j + initYPos
-    };
+    snakeCells[_j] = cells[initXPos][_j + initYPos];
     cells[initXPos][_j + initYPos].type = cellType.snake;
     cells[initXPos][_j + initYPos].dir = direction.up;
   }
@@ -218,9 +215,7 @@ function update() {
       try {
         for (var _iterator2 = row[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
           var cell = _step2.value;
-          ctx.drawImage(getImage(cell.type), cell.x, cell.y);
-          if (cell.type !== cellType.snake && cell.dir !== undefined) ;
-          /*debugger;*/
+          ctx.drawImage(getImage(cell.type), cell.x * emptyCellImage.width, cell.y * emptyCellImage.height);
         }
       } catch (err) {
         _didIteratorError2 = true;
@@ -273,47 +268,34 @@ function generateApple() {
 }
 
 function move() {
-  //document.onkeydown({key: 'ArrowRight'}); document.onkeydown({key: 'ArrowDown'});
   turning = false;
-  var wasGrowth = false;
 
   if (needGrowth) {
     debugger;
     needGrowth = false;
-    wasGrowth = true;
     grow();
   }
 
   var newSnakeCells = [];
 
   for (var i = 0; i < snakeCells.length; i++) {
+    if (snakeCells[i].growed === true) {
+      snakeCells[i].growed = false;
+      snakeCells[i].dir = snakeCells[i - 1].dir;
+    }
+
+    var isHead = i === 0;
+    snakeCells[i].type = cellType.empty;
     var x = snakeCells[i].x;
     var y = snakeCells[i].y;
-
-    if (cells[x][y].growed === true) {
-      cells[x][y].growed = false;
-      cells[x][y].dir = cells[snakeCells[i - 1].x][snakeCells[i - 1].y].dir;
-      if (cells[x][y].dir === undefined) debugger;
-    }
-
-    var c = cells[x][y];
-    var isHead = i === 0;
-    var isEnd = i === snakeCells.length - 1;
-    cells[x][y].type = cellType.empty;
-    x += c.dir === direction.right ? 1 : c.dir === direction.left ? -1 : 0;
-    y += c.dir === direction.down ? 1 : c.dir === direction.up ? -1 : 0;
-
-    if (!(0 <= x && x < cells.length && 0 <= y && y < cells.length)) {
-      die();
-      return;
-    }
+    x += snakeCells[i].dir === direction.right ? 1 : snakeCells[i].dir === direction.left ? -1 : 0;
+    y += snakeCells[i].dir === direction.down ? 1 : snakeCells[i].dir === direction.up ? -1 : 0;
 
     if (isHead) {
-      if (cells[x][y].type === cellType.snake) {
+      if (cells[x] === undefined || cells[x][y] === undefined || cells[x][y].type === cellType.snake) {
         die();
         return;
       } else if (cells[x][y].type === cellType.apple) {
-        // debugger;
         grow();
 
         if (!needGrowth) {
@@ -323,20 +305,12 @@ function move() {
         generateApple();
       }
 
-      cells[x][y].dir = c.dir;
-    } else if (isEnd && !needGrowth
-    /* !!!!!! */
-    ) {// cells[c.x/emptyCellImage.width][c.y/emptyCellImage.width].dir = undefined;
-      }
+      cells[x][y].dir = snakeCells[i].dir;
+    }
 
     cells[x][y].type = cellType.snake;
-    newSnakeCells[i] = {
-      x: x,
-      y: y
-    };
-  } // if(wasGrowth)
-  //     newSnakeCells.push(snakeCells[snakeCells.length-1]);
-
+    newSnakeCells[i] = cells[x][y];
+  }
 
   snakeCells = newSnakeCells;
   setTimeout(move, speed);
@@ -346,22 +320,17 @@ function grow() {
   var lastCell = snakeCells[snakeCells.length - 1];
   var x = lastCell.x;
   var y = lastCell.y;
-  var c = cells[x][y];
-  x += c.dir === direction.right ? -1 : c.dir === direction.left ? 1 : 0;
-  y += c.dir === direction.down ? -1 : c.dir === direction.up ? 1 : 0;
+  x += lastCell.dir === direction.right ? -1 : lastCell.dir === direction.left ? 1 : 0;
+  y += lastCell.dir === direction.down ? -1 : lastCell.dir === direction.up ? 1 : 0;
 
   if (!(0 <= x && x < cells.length && 0 <= y && y < cells.length) || cells[x][y].type === cellType.snake) {
-    //
     needGrowth = true;
     return;
   }
 
   cells[x][y].type = cellType.snake;
   cells[x][y].growed = true;
-  snakeCells[snakeCells.length] = {
-    x: x,
-    y: y
-  };
+  snakeCells[snakeCells.length] = cells[x][y];
 }
 
 function die() {
@@ -370,25 +339,25 @@ function die() {
 }
 
 function turnLeft() {
-  var snakeHead = cells[snakeCells[0].x][snakeCells[0].y];
+  var snakeHead = snakeCells[0];
   if (snakeHead.dir === direction.left || snakeHead.dir === direction.right) return;
   snakeHead.dir = direction.left;
 }
 
 function turnRight() {
-  var snakeHead = cells[snakeCells[0].x][snakeCells[0].y];
+  var snakeHead = snakeCells[0];
   if (snakeHead.dir === direction.left || snakeHead.dir === direction.right) return;
   snakeHead.dir = direction.right;
 }
 
 function turnUp() {
-  var snakeHead = cells[snakeCells[0].x][snakeCells[0].y];
+  var snakeHead = snakeCells[0];
   if (snakeHead.dir === direction.up || snakeHead.dir === direction.down) return;
   snakeHead.dir = direction.up;
 }
 
 function turnDown() {
-  var snakeHead = cells[snakeCells[0].x][snakeCells[0].y];
+  var snakeHead = snakeCells[0];
   if (snakeHead.dir === direction.up || snakeHead.dir === direction.down) return;
   snakeHead.dir = direction.down;
 }
