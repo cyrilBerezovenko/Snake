@@ -3,8 +3,8 @@ import Cell from './cell'
 let cvs = document.querySelector('#canvas');
 let ctx = cvs.getContext('2d');
 
-cvs.width = 510;
-cvs.height = 510;
+cvs.width = 540;
+cvs.height = 540;
 
 let emptyCellImage = new Image();
 let snakeCellImage = new Image();
@@ -13,6 +13,9 @@ let appleCellImage = new Image();
 emptyCellImage.src = './resources/emptyCell.png';
 snakeCellImage.src = './resources/snakeCell.png';
 appleCellImage.src = './resources/appleCell.png';
+
+emptyCellImage.style.border = '600px black solid';
+console.log(emptyCellImage);
 
 appleCellImage.onload = () => {
     start();
@@ -36,7 +39,7 @@ document.onkeydown = (event) => {
 let initXPos = 6;
 let initYPos = 9;
 let initLength = 4;
-let speed = 100;
+let speed = 69;
 
 let cells;
 let snakeCells;

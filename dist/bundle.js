@@ -124,14 +124,16 @@ __webpack_require__.r(__webpack_exports__);
 
 var cvs = document.querySelector('#canvas');
 var ctx = cvs.getContext('2d');
-cvs.width = 510;
-cvs.height = 510;
+cvs.width = 540;
+cvs.height = 540;
 var emptyCellImage = new Image();
 var snakeCellImage = new Image();
 var appleCellImage = new Image();
 emptyCellImage.src = './resources/emptyCell.png';
 snakeCellImage.src = './resources/snakeCell.png';
 appleCellImage.src = './resources/appleCell.png';
+emptyCellImage.style.border = '600px black solid';
+console.log(emptyCellImage);
 
 appleCellImage.onload = function () {
   start();
@@ -155,7 +157,7 @@ document.onkeydown = function (event) {
 var initXPos = 6;
 var initYPos = 9;
 var initLength = 4;
-var speed = 100;
+var speed = 69;
 var cells;
 var snakeCells;
 var lengthEl = document.querySelector('#length');
